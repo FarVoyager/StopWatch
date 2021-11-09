@@ -2,17 +2,11 @@ package com.example.stopwatch.view
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.example.stopwatch.*
 import com.example.stopwatch.databinding.ActivityMainBinding
 import com.example.stopwatch.viewmodel.MainViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MainView {
 
     private val viewmodel: MainViewModel by viewModel()
 
@@ -22,15 +16,27 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        viewmodel.getData()
-        viewmodel.subscribe().observe(this, { renderData(it) })
+        //подписываемся на изменения от двух источников, каждый по отдельному секундомеру
+        viewmodel.subscribeInitial().observe(this, { renderData(it) })
+        viewmodel.subscribeSecond().observe(this, { renderDataSecond(it) })
+        viewmodel.initScope()
 
         binding.buttonStart.setOnClickListener { viewmodel.start() }
         binding.buttonPause.setOnClickListener { viewmodel.pause() }
         binding.buttonStop.setOnClickListener { viewmodel.stop() }
+
+        binding.buttonStart2.setOnClickListener { viewmodel.startSecond() }
+        binding.buttonPause2.setOnClickListener { viewmodel.pauseSecond() }
+        binding.buttonStop2.setOnClickListener { viewmodel.stopSecond() }
     }
 
-    private fun renderData(data: String) {
+    override fun renderData(data: String) {
         binding.textTime.text = data
     }
+
+    override fun renderDataSecond(data: String) {
+        binding.textTime2.text = data
+    }
+
+
 }

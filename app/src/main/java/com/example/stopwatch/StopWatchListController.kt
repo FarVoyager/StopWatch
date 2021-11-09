@@ -43,6 +43,10 @@ class StopWatchListController(
     }
 
     private fun clearValue() {
-        mutableTicker.value = ""
+        mutableTicker.value = DEFAULT_TIME
+    }
+
+    companion object {
+        const val DEFAULT_TIME = "00:00:000"
     }
 }

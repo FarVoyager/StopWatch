@@ -4,32 +4,17 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.stopwatch.*
 import com.example.stopwatch.databinding.ActivityMainBinding
+import com.example.stopwatch.viewmodel.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
 
-    private val timestampProvider = object : TimestampProvider {
-        override fun getMillis(): Long = System.currentTimeMillis()
-    }
-
-    private val stopWatchListController = StopWatchListController(
-        StopWatchStateHolder(
-            StopWatchStateCalculator(
-                timestampProvider,
-                ElapsedTimeCalculator(timestampProvider)
-            ),
-            ElapsedTimeCalculator(timestampProvider),
-            TimestampMillisFormatter()
-        ),
-        CoroutineScope(
-            Dispatchers.Main
-                    + SupervisorJob()
-        )
-    )
+    private val viewmodel: MainViewModel by viewModel()
 
     private lateinit var binding: ActivityMainBinding
 
@@ -37,22 +22,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        viewmodel.getData()
+        viewmodel.subscribe().observe(this, { renderData(it) })
 
-        val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-        scope.launch {
-            stopWatchListController.ticker.collect {
-                binding.textTime.text = it
-            }
-        }
+        binding.buttonStart.setOnClickListener { viewmodel.start() }
+        binding.buttonPause.setOnClickListener { viewmodel.pause() }
+        binding.buttonStop.setOnClickListener { viewmodel.stop() }
+    }
 
-        binding.buttonStart.setOnClickListener {
-            stopWatchListController.start()
-        }
-        binding.buttonPause.setOnClickListener {
-            stopWatchListController.pause()
-        }
-        binding.buttonStop.setOnClickListener {
-            stopWatchListController.stop()
-        }
+    private fun renderData(data: String) {
+        binding.textTime.text = data
     }
 }

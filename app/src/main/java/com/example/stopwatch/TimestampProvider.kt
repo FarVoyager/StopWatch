@@ -4,3 +4,7 @@ package com.example.stopwatch
 interface TimestampProvider {
     fun getMillis(): Long
 }
+
+object TimestampProviderImpl : TimestampProvider {
+    override fun getMillis(): Long = System.currentTimeMillis()
+}
